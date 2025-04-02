@@ -1,0 +1,15 @@
+{% extends "admin/change_list.html" %}
+
+{% block extrahead %}
+{{ block.super }}
+<
+{% endblock %}
+
+{% block object-tools-items %}
+{{ block.super }}
+<li>
+   <a href="{% url 'view_importar_chaves' %}" class="btn btn-info">Importar Chaves</a>
+</li>
+
+{% endblock %}
+

@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<body>
+        <h2 class="h3 mb-3 font-weight-normal">Castrar Chave</h2>
+       <div class="container">
+    <form class="form-control" method="post" action="{% url 'chaves:create_chave' %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Salvar</button>
+    </form>
+    </div>
+</body>
+{% endblock %}

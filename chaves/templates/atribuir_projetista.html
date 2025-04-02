@@ -1,0 +1,13 @@
+<!-- atribuir_projetista.html -->
+{% extends "admin/base_site.html" %}
+{% block content %}
+<h1>Atribuir Projetista</h1>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <!-- Campo oculto para armazenar os IDs das chaves selecionadas -->
+
+    <input type="submit" value="Atribuir Projetista">
+</form>
+{% endblock %}

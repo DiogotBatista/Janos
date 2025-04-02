@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Gerenciar Chaves - JANOS{% endblock %}
+
+{% block extra_head %}
+{% endblock extra_head %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Botões de topo -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <a href="{% url 'janus_view' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Voltar ao Menu
+        </a>
+        <a href="{% url 'solicitar_chaves' %}" class="btn btn-success">
+            <i class="bi bi-plus-circle"></i> Solicitar Chaves
+        </a>
+    </div>
+
+    <!-- Título -->
+    <h4 class="fw-bold mb-3">Lista de Chaves</h4>
+
+    <!-- Filtro de Pesquisa -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <form method="get">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-2">
+                    <label class="form-label">Chave</label>
+                    <input type="text" class="form-control" name="chave_search" placeholder="Ex: CHV123" value="{{ request.GET.chave_search }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">NS</label>
+                    <input type="text" class="form-control" name="ns_search" placeholder="Ex: NS001" value="{{ request.GET.ns_search }}">
+                </div>
+                {% if is_superuser or usuario_no_grupo_supervisor %}
+                <div class="col-md-3">
+                    <label class="form-label">Projetista</label>
+                    <input type="text" class="form-control" name="projetista_search" placeholder="Ex: João Silva" value="{{ request.GET.projetista_search }}">
+                </div>
+                {% endif %}
+                <div class="col-md-5 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search me-1"></i> Pesquisar
+                    </button>
+                    <a href="{% url 'gerenciar_chaves' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle me-1"></i> Limpar Filtros
+                    </a>
+                    <a href="?sem_projeto=true" class="btn btn-warning">
+                        <i class="bi bi-filter me-1"></i> Sem NS
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+    <!-- Tabela -->
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Chave</th>
+                    {% if is_superuser or usuario_no_grupo_supervisor %}
+                        <th>Projetista</th>
+                    {% endif %}
+                    <th>NS</th>
+                    <th>Poste</th>
+                    <th>Coordenada</th>
+                    <th>Polo</th>
+                    <th>Município</th>
+                    <th>Observação</th>
+                    {% if is_superuser or usuario_no_grupo_supervisor %}
+                        <th>Inclusão</th>
+                    {% endif %}
+                    <th>Última Modificação</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for chave in chaves %}
+                <tr>
+                    <td>
+                        <a href="{% url 'editar_chave' chave.id %}" class="text-decoration-none text-primary fw-semibold">
+                            {{ chave.chave|default_if_none:"" }}
+                        </a>
+                    </td>
+                    {% if is_superuser or usuario_no_grupo_supervisor %}
+                        <td>{{ chave.projetista|default_if_none:"" }}</td>
+                    {% endif %}
+                    <td>{{ chave.ns|default_if_none:"" }}</td>
+                    <td>{{ chave.poste|default_if_none:"" }}</td>
+                    <td>{{ chave.coordenada|default_if_none:"" }}</td>
+                    <td>{{ chave.polo|default_if_none:"" }}</td>
+                    <td>{{ chave.municipio|default_if_none:"" }}</td>
+                    <td>{{ chave.observacao|default_if_none:"" }}</td>
+                    {% if is_superuser or usuario_no_grupo_supervisor %}
+                        <td>{{ chave.data_inclusao|default_if_none:""|date:"d/m/Y H:i" }}</td>
+                    {% endif %}
+                    <td>{{ chave.data_modificacao|default_if_none:""|date:"d/m/Y H:i" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paginação -->
+    <nav class="mt-4" aria-label="Paginação">
+        <ul class="pagination justify-content-center">
+            {% if chaves.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ chaves.previous_page_number }}">&laquo;</a>
+                </li>
+            {% endif %}
+
+            {% for page_num in chaves.paginator.page_range %}
+                {% if page_num == chaves.number %}
+                    <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
+                {% elif page_num > chaves.number|add:"-3" and page_num < chaves.number|add:"3" %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a></li>
+                {% elif page_num == 1 or page_num == chaves.paginator.num_pages %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a></li>
+                {% elif page_num == chaves.number|add:"-3" or page_num == chaves.number|add:"3" %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+            {% endfor %}
+
+            {% if chaves.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ chaves.next_page_number }}">&raquo;</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+{% endblock %}

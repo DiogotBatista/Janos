@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block title %}Menu Principal - JANOS{% endblock %}
+
+{% block content %}
+<div class="container text-center mt-4">
+    <h1 class="fw-bold">Bem-vindo, {{ first_name }}!</h1>
+    <p class="fs-5 text-muted">Selecione uma das opções abaixo para começar:</p>
+</div>
+
+<div class="container mt-5">
+    <div class="row g-4 justify-content-center">
+
+        {% if is_superuser or usuario_no_grupo_supervisor %}
+            <!-- Banco de Dados -->
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body d-flex flex-column text-center gap-3">
+                        <div>
+                            <i class="bi bi-database display-4 text-primary mb-3"></i>
+                            <h5 class="card-title">Banco de Dados</h5>
+                            <p class="card-text">Visualize o painel com informações do sistema JANOS.</p>
+                        </div>
+                        <div class="mt-auto">
+                            <a href="https://janos.dbsistemas.com.br/janos_painel/" class="btn btn-outline-primary">Acessar</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gerenciar Chaves -->
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body d-flex flex-column text-center gap-3">
+                        <div>
+                            <i class="bi-lightning-charge display-4 text-primary mb-3"></i>
+                            <h5 class="card-title">Gerenciar Chaves</h5>
+                            <p class="card-text">Adicione, edite ou exclua registros de chaves.</p>
+                        </div>
+                        <div class="mt-auto">
+                            <a href="{% url 'gerenciar_chaves' %}" class="btn btn-outline-primary">Acessar</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pesquisar Chaves -->
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body d-flex flex-column text-center gap-3">
+                        <div>
+                            <i class="bi bi-search display-4 text-primary mb-3"></i>
+                            <h5 class="card-title">Pesquisar Chaves</h5>
+                            <p class="card-text">Busque informações completas de uma chave.</p>
+                        </div>
+                        <div class="mt-auto">
+                            <a href="{% url 'buscar_chave' %}" class="btn btn-outline-primary">Acessar</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Extrair Metadados -->
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body d-flex flex-column text-center gap-3">
+                        <div>
+                            <i class="bi bi-file-earmark-code display-4 text-primary mb-3"></i>
+                            <h5 class="card-title">Extrair Metadados</h5>
+                            <p class="card-text">Extraia informações de fotos para uso técnico.</p>
+                        </div>
+                        <div class="mt-auto">
+                            <a href="https://extrair-metadados.onrender.com/" class="btn btn-outline-primary">Acessar</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        {% elif usuario_no_grupo_topografia %}
+            <!-- Extrair Metadados -->
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body d-flex flex-column text-center gap-3">
+                        <div>
+                            <i class="bi bi-file-earmark-code display-4 text-primary mb-3"></i>
+                            <h5 class="card-title">Extrair Metadados</h5>
+                            <p class="card-text">Extraia informações de arquivos para uso técnico.</p>
+                        </div>
+                        <div class="mt-auto">
+                            <a href="https://extrair-metadados.onrender.com/" class="btn btn-outline-primary">Acessar</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        {% elif usuario_no_grupo_tecnicos %}
+            <!-- Gerenciar Chaves -->
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body d-flex flex-column text-center gap-3">
+                        <div>
+                            <i class="bi-lightning-charge display-4 text-primary mb-3"></i>
+                            <h5 class="card-title">Gerenciar Chaves</h5>
+                            <p class="card-text">Adicione, edite ou exclua registros de chaves.</p>
+                        </div>
+                        <div class="mt-auto">
+                            <a href="{% url 'gerenciar_chaves' %}" class="btn btn-outline-primary">Acessar</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pesquisar Chaves -->
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body d-flex flex-column text-center gap-3">
+                        <div>
+                            <i class="bi bi-search display-4 text-primary mb-3"></i>
+                            <h5 class="card-title">Pesquisar Chaves</h5>
+                            <p class="card-text">Busque por número de chave, projeto, data e mais.</p>
+                        </div>
+                        <div class="mt-auto">
+                            <a href="{% url 'buscar_chave' %}" class="btn btn-outline-primary">Acessar</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+    </div>
+</div>
+
+<!-- Avisos -->
+{% if avisos %}
+<div class="container mt-5">
+    <div class="alert alert-info shadow-sm">
+        <h5 class="alert-heading"><i class="bi bi-info-circle-fill me-2"></i> Avisos Importantes</h5>
+        <hr>
+        {% for aviso in avisos %}
+            <p class="mb-1"><strong>{{ aviso.titulo }}:</strong> {{ aviso.mensagem }}</p>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}
