@@ -16,7 +16,6 @@ from .models import Chave, Projetista, Aviso
 def view_index(request):
     return render(request, 'index.html')
 
-
 @login_required(login_url='/janus/login')  # Substitua '/caminho_para_login/' pela URL da sua página de login
 def view_importar_chaves(request):
     is_superuser = request.user.is_superuser
@@ -36,7 +35,6 @@ def view_importar_chaves(request):
         form = PlanilhaUploadForm()
     return render(request, 'upload_planilha.html', {'form': form})
 
-
 def custom_login(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -55,7 +53,6 @@ def custom_login(request):
         form.fields['username'].widget.attrs.update({'class': 'form-control'})
         form.fields['password'].widget.attrs.update({'class': 'form-control'})
     return render(request, 'login.html', {'form': form})
-
 
 @login_required(login_url='/janus/login')  # Substitua '/caminho_para_login/' pela URL da sua página de login
 def gerenciar_chaves(request):
@@ -104,7 +101,6 @@ def gerenciar_chaves(request):
 
     return render(request, 'gerenciar_chaves.html', context)
 
-
 @login_required(login_url='/janus/login')
 def janus_view(request):
     usuario_no_grupo_topografia = request.user.groups.filter(name='topografia').exists()
@@ -121,7 +117,6 @@ def janus_view(request):
         'avisos': avisos,
     }
     return render(request, 'menu.html', context)
-
 
 @login_required(login_url='/janus/login')  # Substitua '/caminho_para_login/' pela URL da sua página de login
 def editar_chave(request, id):
@@ -149,7 +144,6 @@ def editar_chave(request, id):
         form = ChaveForm(instance=chave)
 
     return render(request, 'editar_chave.html', {'form': form})
-
 
 @login_required(login_url='/janus/login/')
 def view_atribuir_projetista(request):
@@ -181,7 +175,6 @@ def view_atribuir_projetista(request):
 
         return render(request, 'atribuir_projetista.html', {'form': form})
 
-
 @login_required(login_url='/janus/login/')
 def buscar_chave(request):
     chave_pesquisada = None
@@ -194,13 +187,11 @@ def buscar_chave(request):
 
     return render(request, 'buscar_chave.html', {'chave': chave_pesquisada})
 
-
 from .models import EmailConfig
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from datetime import datetime
-
 
 def solicitacao_chave_view(request):
     modal_show = False
@@ -242,6 +233,12 @@ def solicitacao_chave_view(request):
     return render(request, 'solicitacao_chaves.html',
                   {'form': form, 'modal_show': modal_show, 'chaves_sem_ns_msg': chaves_sem_ns_msg})
 
-
 def pagina_de_sucesso_view(request):
     return render(request, 'pagina_de_sucesso.html')
+
+
+from django.http import HttpResponse
+
+def view_com_erro(request):
+    x = 1 / 0  # isso vai causar ZeroDivisionError
+    return HttpResponse("Isso nunca será exibido.")

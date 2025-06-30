@@ -1,6 +1,6 @@
 # chaves/urls.py
 from django.urls import path
-from .views import custom_login, janus_view, gerenciar_chaves, editar_chave, view_importar_chaves, view_atribuir_projetista, solicitacao_chave_view, pagina_de_sucesso_view, buscar_chave
+from .views import custom_login, janus_view, gerenciar_chaves, editar_chave, view_importar_chaves, view_atribuir_projetista, solicitacao_chave_view, pagina_de_sucesso_view, buscar_chave, view_com_erro
 
 urlpatterns = [
     path('login/', custom_login, name='login'),
@@ -12,6 +12,8 @@ urlpatterns = [
     path('solicitar-chaves/', solicitacao_chave_view, name='solicitar_chaves'),
     path('pagina-de-sucesso/', pagina_de_sucesso_view, name='pagina_de_sucesso'),
     path('buscar-chave/', buscar_chave, name='buscar_chave'),
+
+    path('forcar-erro/', view_com_erro, name='forcar_erro'),
 
 ]
 

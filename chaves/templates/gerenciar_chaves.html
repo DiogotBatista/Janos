@@ -47,9 +47,11 @@
                     <a href="{% url 'gerenciar_chaves' %}" class="btn btn-outline-secondary">
                         <i class="bi bi-x-circle me-1"></i> Limpar Filtros
                     </a>
-                    <a href="?sem_projeto=true" class="btn btn-warning">
-                        <i class="bi bi-filter me-1"></i> Sem NS
+                    <a href="?{% if request.GET.chave_search %}chave_search={{ request.GET.chave_search }}&{% endif %}{% if request.GET.ns_search %}ns_search={{ request.GET.ns_search }}&{% endif %}{% if request.GET.projetista_search %}projetista_search={{ request.GET.projetista_search }}&{% endif %}{% if request.GET.page %}page={{ request.GET.page }}&{% endif %}sem_projeto=true"
+                       class="btn btn-warning">
+                       <i class="bi bi-filter me-1"></i> Sem NS
                     </a>
+
                 </div>
             </div>
         </form>
@@ -105,33 +107,55 @@
         </table>
     </div>
 
-    <!-- Paginação -->
-    <nav class="mt-4" aria-label="Paginação">
-        <ul class="pagination justify-content-center">
-            {% if chaves.has_previous %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ chaves.previous_page_number }}">&laquo;</a>
-                </li>
-            {% endif %}
 
-            {% for page_num in chaves.paginator.page_range %}
-                {% if page_num == chaves.number %}
-                    <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
-                {% elif page_num > chaves.number|add:"-3" and page_num < chaves.number|add:"3" %}
-                    <li class="page-item"><a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a></li>
-                {% elif page_num == 1 or page_num == chaves.paginator.num_pages %}
-                    <li class="page-item"><a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a></li>
-                {% elif page_num == chaves.number|add:"-3" or page_num == chaves.number|add:"3" %}
-                    <li class="page-item disabled"><span class="page-link">...</span></li>
-                {% endif %}
-            {% endfor %}
+<!-- Paginação -->
+<!-- Paginação -->
+<nav aria-label="Page navigation">
+  <ul class="pagination justify-content-center">
 
-            {% if chaves.has_next %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ chaves.next_page_number }}">&raquo;</a>
-                </li>
-            {% endif %}
-        </ul>
-    </nav>
+    {% if chaves.has_previous %}
+      <li class="page-item">
+        <a class="page-link"
+           href="?{% if request.GET.chave_search %}chave_search={{ request.GET.chave_search }}&{% endif %}{% if request.GET.ns_search %}ns_search={{ request.GET.ns_search }}&{% endif %}{% if request.GET.projetista_search %}projetista_search={{ request.GET.projetista_search }}&{% endif %}{% if request.GET.sem_projeto %}sem_projeto={{ request.GET.sem_projeto }}&{% endif %}page={{ chaves.previous_page_number }}"
+           aria-label="Anterior">
+          <span aria-hidden="true">&laquo;</span>
+        </a>
+      </li>
+    {% endif %}
+
+    {% for page_num in chaves.paginator.page_range %}
+      {% if page_num == chaves.number %}
+        <li class="page-item active">
+          <span class="page-link">{{ page_num }}</span>
+        </li>
+      {% elif page_num <= 2 or page_num > chaves.paginator.num_pages|add:"-2" or page_num|add:"-1" == chaves.number or page_num|add:"1" == chaves.number %}
+        <li class="page-item">
+          <a class="page-link"
+             href="?{% if request.GET.chave_search %}chave_search={{ request.GET.chave_search }}&{% endif %}{% if request.GET.ns_search %}ns_search={{ request.GET.ns_search }}&{% endif %}{% if request.GET.projetista_search %}projetista_search={{ request.GET.projetista_search }}&{% endif %}{% if request.GET.sem_projeto %}sem_projeto={{ request.GET.sem_projeto }}&{% endif %}page={{ page_num }}">
+            {{ page_num }}
+          </a>
+        </li>
+      {% elif page_num == 3 and chaves.number > 4 %}
+        <li class="page-item disabled"><span class="page-link">...</span></li>
+      {% elif page_num == chaves.paginator.num_pages|add:"-2" and chaves.number < chaves.paginator.num_pages|add:"-3" %}
+        <li class="page-item disabled"><span class="page-link">...</span></li>
+      {% endif %}
+    {% endfor %}
+
+    {% if chaves.has_next %}
+      <li class="page-item">
+        <a class="page-link"
+           href="?{% if request.GET.chave_search %}chave_search={{ request.GET.chave_search }}&{% endif %}{% if request.GET.ns_search %}ns_search={{ request.GET.ns_search }}&{% endif %}{% if request.GET.projetista_search %}projetista_search={{ request.GET.projetista_search }}&{% endif %}{% if request.GET.sem_projeto %}sem_projeto={{ request.GET.sem_projeto }}&{% endif %}page={{ chaves.next_page_number }}"
+           aria-label="Próxima">
+          <span aria-hidden="true">&raquo;</span>
+        </a>
+      </li>
+    {% endif %}
+
+  </ul>
+</nav>
+
+
+
 </div>
 {% endblock %}
