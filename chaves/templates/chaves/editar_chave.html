@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+
+{% block title %}Editar Chave - JANOS{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'index' %}">Início</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'janus_view' %}">Menu</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'gerenciar_chaves' %}">Chaves</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Editar</li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block extra_head %}
+{{ block.super }}
+<style>
+  .card-header-soft { background: transparent; border-bottom: 1px solid var(--divider); }
+  .form-label { font-weight: 500; }
+  .req-asterisk { color: var(--bs-danger); margin-left: .25rem; }
+</style>
+{% endblock extra_head %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <div class="card shadow-sm border-0">
+        <div class="card-header card-header-soft d-flex align-items-center justify-content-between">
+          <h5 class="mb-0 d-flex align-items-center gap-2">
+            <i class="bi bi-pencil-square icon-xl text-primary" aria-hidden="true"></i>
+            Editar Chave
+          </h5>
+          <a href="{% url 'gerenciar_chaves' %}" class="btn btn-ghost btn-sm">
+            <i class="bi bi-arrow-left"></i> Voltar
+          </a>
+        </div>
+
+        <div class="card-body">
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger" role="alert">
+              {% for error in form.non_field_errors %}{{ error }}<br>{% endfor %}
+            </div>
+          {% endif %}
+
+          <form method="post" autocomplete="off" id="form-editar-chave" novalidate>
+            {% csrf_token %}
+
+            <div class="row g-3">
+              <!-- Chave -->
+              <div class="col-md-6">
+                <label for="{{ form.chave.id_for_label }}" class="form-label">
+                  {{ form.chave.label }}{% if form.chave.field.required %}<span class="req-asterisk">*</span>{% endif %}
+                </label>
+                {% if form.chave.errors %}
+                  {{ form.chave|add_class:"form-control is-invalid" }}
+                {% else %}
+                  {{ form.chave|add_class:"form-control" }}
+                {% endif %}
+                {% for error in form.chave.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+              </div>
+
+              <!-- NS -->
+              <div class="col-md-6">
+                <label for="{{ form.ns.id_for_label }}" class="form-label">
+                  {{ form.ns.label }}{% if form.ns.field.required %}<span class="req-asterisk">*</span>{% endif %}
+                </label>
+                {% if form.ns.errors %}
+                  {{ form.ns|add_class:"form-control is-invalid" }}
+                {% else %}
+                  {{ form.ns|add_class:"form-control" }}
+                {% endif %}
+                {% for error in form.ns.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+              </div>
+
+              <!-- Polo -->
+              <div class="col-md-6">
+                <label for="{{ form.polo.id_for_label }}" class="form-label">
+                  {{ form.polo.label }}{% if form.polo.field.required %}<span class="req-asterisk">*</span>{% endif %}
+                </label>
+                {% if form.polo.errors %}
+                  {{ form.polo|add_class:"form-control is-invalid" }}
+                {% else %}
+                  {{ form.polo|add_class:"form-control" }}
+                {% endif %}
+                {% for error in form.polo.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+              </div>
+
+              <!-- Município -->
+              <div class="col-md-6">
+                <label for="{{ form.municipio.id_for_label }}" class="form-label">
+                  {{ form.municipio.label }}{% if form.municipio.field.required %}<span class="req-asterisk">*</span>{% endif %}
+                </label>
+                {% if form.municipio.errors %}
+                  {{ form.municipio|add_class:"form-control is-invalid" }}
+                {% else %}
+                  {{ form.municipio|add_class:"form-control" }}
+                {% endif %}
+                {% for error in form.municipio.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+              </div>
+
+              <!-- Coordenada -->
+              <div class="col-md-6">
+                <label for="{{ form.coordenada.id_for_label }}" class="form-label">
+                  {{ form.coordenada.label }}{% if form.coordenada.field.required %}<span class="req-asterisk">*</span>{% endif %}
+                </label>
+                {% if form.coordenada.errors %}
+                  {{ form.coordenada|add_class:"form-control is-invalid" }}
+                {% else %}
+                  {{ form.coordenada|add_class:"form-control" }}
+                {% endif %}
+                {% for error in form.coordenada.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+              </div>
+
+              <!-- Poste -->
+              <div class="col-md-6">
+                <label for="{{ form.poste.id_for_label }}" class="form-label">
+                  {{ form.poste.label }}{% if form.poste.field.required %}<span class="req-asterisk">*</span>{% endif %}
+                </label>
+                {% if form.poste.errors %}
+                  {{ form.poste|add_class:"form-control is-invalid" }}
+                {% else %}
+                  {{ form.poste|add_class:"form-control" }}
+                {% endif %}
+                {% for error in form.poste.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+              </div>
+
+              <!-- Observação -->
+              <div class="col-12">
+                <label for="{{ form.observacao.id_for_label }}" class="form-label">
+                  {{ form.observacao.label }}{% if form.observacao.field.required %}<span class="req-asterisk">*</span>{% endif %}
+                </label>
+                {% if form.observacao.errors %}
+                  {{ form.observacao|add_class:"form-control is-invalid" }}
+                {% else %}
+                  {{ form.observacao|add_class:"form-control" }}
+                {% endif %}
+                {% for error in form.observacao.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-between mt-4">
+              <a href="{% url 'gerenciar_chaves' %}" class="btn btn-ghost">
+                <i class="bi bi-x-circle"></i> Cancelar
+              </a>
+              <button type="submit" class="btn btn-primary">
+                <i class="bi bi-save"></i> Salvar alterações
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div><!-- /col -->
+  </div><!-- /row -->
+</div><!-- /container -->
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // overlay ao salvar
+  const f = document.getElementById('form-editar-chave');
+  if (f) f.addEventListener('submit', () => { if (typeof showLoadingOverlay === 'function') showLoadingOverlay(true); });
+
+  // Máscara simples para coordenada (##:##:## até 14 chars, números e ':')
+  document.addEventListener("DOMContentLoaded", function() {
+    const inputCoordenada = document.getElementById('{{ form.coordenada.id_for_label }}') || document.getElementById('id_coordenada');
+    if (!inputCoordenada) return;
+
+    inputCoordenada.addEventListener('input', function(e) {
+      let v = e.target.value.replace(/[^\d:]/g, '');
+      if (v.length > 6 && v[6] !== ':') v = v.slice(0, 6) + ':' + v.slice(6);
+      e.target.value = v.slice(0, 14);
+    });
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,98 @@
+<!-- Modal Genérico: Em desenvolvimento -->
+<div class="modal fade" id="wipModal" tabindex="-1" aria-labelledby="wipTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow">
+      <div class="modal-header">
+        <h5 class="modal-title d-flex align-items-center gap-2" id="wipTitle">
+          <i class="bi bi-tools"></i>
+          <span>Em desenvolvimento</span>
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        <p id="wipMessage" class="mb-3">
+          Esta funcionalidade ainda está sendo construída. Em breve estará disponível.
+        </p>
+
+        <!-- Opcional: botão de feedback (ajuste o link se quiser) -->
+        <div class="d-flex gap-2">
+          <a id="wipFeedbackLink" href="mailto:suporte@dbsistemas.com.br?subject=Feedback%20SGC%20-%20Funcionalidade%20em%20desenvolvimento"
+             class="btn btn-soft-primary">
+            <i class="bi bi-envelope"></i> Enviar feedback
+          </a>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle"></i> Fechar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  // Instância do modal (Bootstrap 5)
+  const wipModalEl = document.getElementById('wipModal');
+  let wipModal;
+  function getModalInstance() {
+    if (!wipModal) {
+      wipModal = new bootstrap.Modal(wipModalEl, { backdrop: 'static' });
+    }
+    return wipModal;
+  }
+
+  // Função global: abrir modal com título/mensagem/feedback opcionais
+  window.showWip = function (opts = {}) {
+    const titleEl = document.getElementById('wipTitle');
+    const msgEl   = document.getElementById('wipMessage');
+    const fbEl    = document.getElementById('wipFeedbackLink');
+
+    // Título
+    titleEl.querySelector('span').textContent = opts.title || 'Em desenvolvimento';
+    // Mensagem
+    msgEl.textContent = opts.message || 'Esta funcionalidade ainda está sendo construída. Em breve estará disponível.';
+    // Link de feedback (opcional)
+    if (opts.feedbackHref) {
+      fbEl.href = opts.feedbackHref;
+      fbEl.classList.remove('d-none');
+    } else {
+      fbEl.classList.add('d-none');
+    }
+
+    getModalInstance().show();
+  };
+
+  // Delegação de eventos: qualquer elemento com .js-wip ou data-wip abre o modal
+  document.addEventListener('click', function (ev) {
+    const t = ev.target.closest('[data-wip], .js-wip');
+    if (!t) return;
+
+    // Impede navegação
+    ev.preventDefault();
+
+    // Lê atributos opcionais
+    const title   = t.getAttribute('data-wip-title');
+    const message = t.getAttribute('data-wip-msg') || t.getAttribute('data-wip-message');
+    const fbHref  = t.getAttribute('data-wip-feedback');
+
+    window.showWip({
+      title: title,
+      message: message,
+      feedbackHref: fbHref
+    });
+  });
+})();
+</script>
+
+<style>
+/* visual "soft" do botão, combinando com o seu design */
+.btn-soft-primary{
+  color: var(--bs-primary);
+  background: rgba(var(--bs-primary-rgb), .12);
+  border: 1px solid rgba(var(--bs-primary-rgb), .25);
+}
+.btn-soft-primary:hover{
+  background: rgba(var(--bs-primary-rgb), .18);
+  border-color: rgba(var(--bs-primary-rgb), .35);
+}
+</style>

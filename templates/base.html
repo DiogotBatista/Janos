@@ -1,0 +1,313 @@
+{% load static %}
+{% load custom_filters %}
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <title>{% block title %}{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon" />
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/favicon-apple.png' %}" />
+    <meta name="description" content="JANOS - Sistema de Gestão de Chaves" />
+
+    <!-- Bootstrap / Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+    <!-- HTMX (se precisar) -->
+    <script src="https://unpkg.com/htmx.org@1.9.5"></script>
+
+    {% block extra_head %}{% endblock extra_head %}
+    {% block extra_css %}{% endblock extra_css %}
+
+    <style>
+      /* ===== Variáveis / Cores base ===== */
+      :root{
+        --navbar-h: 56px;         /* recalculado via JS */
+        --footer-h: 48px;         /* recalculado via JS */
+        --navbar-extra-gap: 16px;
+
+        --bg-page: #f6f8fb;
+        --card-bg: #ffffff;
+        --text-color: #212529;
+        --muted-color: #6c757d;
+        --divider: rgba(0,0,0,.08);
+
+        /* Vars globais para toasts (o partial usa seus próprios fallbacks) */
+        --toast-max-width: 520px;
+        --toast-accent-w: 6px;
+        --toast-radius: .75rem;
+      }
+
+      body { background: var(--bg-page); color: var(--text-color); }
+      body.has-fixed-footer { padding-top: calc(var(--navbar-h) + var(--navbar-extra-gap)); }
+
+      .page-content{
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 10px;
+        padding-bottom: calc(var(--footer-h) + 56px);
+      }
+
+      .card { background: var(--card-bg); }
+      .border-top { border-top-color: var(--divider) !important; }
+      .container .text-muted { color: var(--muted-color) !important; }
+
+      @media (max-width: 575.98px){
+        :root{ --navbar-h: 64px; --footer-h: 56px; }
+      }
+
+      /* ===== Navbar ===== */
+      .navbar.app-nav {
+        background: #fff !important;
+        border-bottom: 1px solid var(--divider);
+        box-shadow: 0 .25rem .5rem rgba(0,0,0,.04);
+      }
+      .navbar.app-nav .navbar-brand {
+        font-weight: 600; letter-spacing: .2px;
+        display: inline-flex; align-items: center; gap: .5rem;
+      }
+      .navbar.app-nav .navbar-brand .brand-mark {
+        width: 28px; height: 28px; border-radius: 8px;
+        display: inline-flex; align-items: center; justify-content: center;
+        background: rgba(var(--bs-primary-rgb), .12); color: var(--bs-primary);
+      }
+
+      .navbar.app-nav .nav-link {
+        position: relative; border-radius: .4rem;
+        padding: .5rem .75rem; transition: background-color .2s ease, color .2s ease;
+      }
+      .navbar.app-nav .nav-link:hover { background: rgba(var(--bs-primary-rgb), .08); color: var(--bs-primary); }
+      .navbar.app-nav .nav-link.active,
+      .navbar.app-nav .show > .nav-link { color: var(--bs-primary); background: rgba(var(--bs-primary-rgb), .10); }
+      .navbar.app-nav .nav-link.active::after {
+        content: ""; position: absolute; left: .5rem; right: .5rem; bottom: .25rem;
+        height: 2px; background: var(--bs-primary); border-radius: 999px; opacity: .85;
+      }
+
+      .navbar.app-nav .dropdown-menu {
+        border: 1px solid var(--divider); box-shadow: 0 .5rem 1rem rgba(0,0,0,.08);
+        border-radius: .75rem; padding: .35rem;
+      }
+      .navbar.app-nav .dropdown-item { border-radius: .5rem; padding: .5rem .75rem; }
+      .navbar.app-nav .dropdown-item:hover { background: rgba(var(--bs-primary-rgb), .08); color: var(--bs-primary); }
+      .navbar.app-nav .navbar-toggler { border: 1px solid var(--divider); }
+
+      /* ===== Chip do usuário ===== */
+      .user-chip { display: inline-flex; align-items: center; gap: .5rem; padding: .35rem .6rem;
+                   border-radius: 999px; border: 1px solid rgba(0,0,0,.06); background: #fff; }
+      .user-avatar { width: 28px; height: 28px; border-radius: 50%;
+                     display: inline-flex; align-items: center; justify-content: center;
+                     background: rgba(0,0,0,.06); font-weight: 600; font-size: .85rem; }
+
+      /* ===== Botões soft ===== */
+      .btn-min { min-width: 140px; }
+      .btn-sm .bi { margin-right: .35rem; }
+      .btn:focus-visible{ outline: 0; box-shadow: 0 0 0 .2rem rgba(var(--bs-primary-rgb), .25); }
+
+      .btn-soft-primary{
+        color: var(--bs-primary);
+        background: rgba(var(--bs-primary-rgb), .12);
+        border: 1px solid rgba(var(--bs-primary-rgb), .25);
+      }
+      .btn-soft-primary:hover{ background: rgba(var(--bs-primary-rgb), .18); border-color: rgba(var(--bs-primary-rgb), .35); }
+
+      .btn-soft-warning{
+        color: var(--bs-warning);
+        background: rgba(var(--bs-warning-rgb), .18);
+        border: 1px solid rgba(var(--bs-warning-rgb), .35);
+      }
+      .btn-soft-warning:hover{ background: rgba(var(--bs-warning-rgb), .24); border-color: rgba(var(--bs-warning-rgb), .45); }
+
+      /* ===== Footer fixo ===== */
+      .app-footer{ min-height: var(--footer-h); z-index: 1030; }
+
+      /* ===== Breadcrumbs ===== */
+      .breadcrumb { background: transparent; margin-bottom: .75rem; }
+      .breadcrumb-item a { text-decoration: none; }
+      .breadcrumb-item a:hover { text-decoration: underline; }
+      .breadcrumb-item a, .breadcrumb-item.active{
+        max-width: 40ch; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        display: inline-block; vertical-align: bottom;
+      }
+    </style>
+  </head>
+
+  <body class="d-flex flex-column min-vh-100 has-fixed-footer">
+    <!-- Header / Navbar -->
+    <nav class="navbar navbar-expand-lg app-nav fixed-top">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="{% url 'index' %}">
+          <span class="brand-mark"><i class="bi bi-diagram-3"></i></span> JANOS
+        </a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+                aria-controls="mainNav" aria-expanded="false" aria-label="Alternar navegação">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="mainNav">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item"><a class="nav-link" href="{% url 'janus_view' %}"><i class="bi bi-list-ul"></i> Menu</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'gerenciar_chaves' %}"><i class="bi bi-bezier2"></i> Gerenciar Chaves</a></li>
+            {% if is_superuser or usuario_no_grupo_supervisor %}
+              <li class="nav-item"><a class="nav-link" href="{% url 'admin:index' %}"><i class="bi bi-database"></i> Banco de Dados</a></li>
+            {% endif %}
+          </ul>
+
+          {% if request.user.is_authenticated %}
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item dropdown">
+              <a class="nav-link p-0" href="#" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                <span class="user-chip">
+                  <span class="user-avatar" id="userAvatar">U</span>
+                  <span class="d-none d-sm-inline">
+                    {% with request.user.get_full_name|default:request.user.username as full_name %}
+                      {% if full_name %}
+                        {% with full_name|split:" " as name_parts %}{{ name_parts.0 }} {{ name_parts|last }}{% endwith %}
+                      {% else %}{{ request.user.username }}{% endif %}
+                    {% endwith %}
+                  </span>
+                  <i class="bi bi-caret-down-fill ms-1"></i>
+                </span>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+                <li><a class="dropdown-item js-wip" href="#"><i class="bi bi-person"></i> Meu perfil</a></li>
+                <li><a class="dropdown-item js-wip" href="#"><i class="bi bi-sliders"></i> Preferências</a></li>
+                <li><hr class="dropdown-divider" /></li>
+                <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="bi bi-box-arrow-right"></i> Sair</a></li>
+              </ul>
+            </li>
+          </ul>
+          {% else %}
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="btn btn-soft-primary btn-sm" href="{% url 'login' %}">
+                <i class="bi bi-box-arrow-in-right"></i> Entrar
+              </a>
+            </li>
+          </ul>
+          {% endif %}
+        </div>
+      </div>
+    </nav>
+
+    <!-- Conteúdo -->
+    <main role="main" class="flex-grow-1 container page-content">
+      {% block breadcrumbs %}{% endblock %}
+      {% block content %}{% endblock %}
+    </main>
+
+    <!-- Rodapé fixo -->
+    <footer class="fixed-bottom app-footer bg-light text-center py-2 border-top shadow-sm" role="contentinfo" aria-label="Rodapé">
+      {% block footer %}{% include "footer.html" %}{% endblock footer %}
+    </footer>
+
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+
+    {% block extra_js %}{% endblock extra_js %}
+
+    <!-- Overlay minimal -->
+    <div id="loading-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+        background-color:rgba(18,18,18,0.9); z-index:9999; align-items:center; justify-content:center;
+        flex-direction: column; font-family: monospace; text-align: center; font-size: 1.5rem; overflow: hidden">
+      <div class="orbita-container">
+        <div class="nucleo"></div><div class="orbit"></div>
+      </div>
+      <h1 style="color: #e0e0e0; margin-top: 80px;">Processando... Sincronizando dados...</h1>
+    </div>
+
+    <style>
+      .orbita-container { position: relative; width: 200px; height: 200px; }
+      .nucleo { position: absolute; top: 50%; left: 50%; width: 40px; height: 40px;
+        background: radial-gradient(circle, #ffcc00, #ffaa00); border-radius: 50%;
+        transform: translate(-50%, -50%); box-shadow: 0 0 10px #ffcc00, 0 0 20px #ffcc00; }
+      .orbit { position: absolute; top: 50%; left: 50%; width: 150px; height: 150px;
+        border: 2px dashed rgba(0, 188, 212, 0.4); border-radius: 50%;
+        transform: translate(-50%, -50%); animation: spin 3s linear infinite; }
+      .orbit::before { content: ''; position: absolute; top: 50%; left: 100%; width: 16px; height: 16px;
+        background-color: #00bcd4; border-radius: 50%; box-shadow: 0 0 5px #00bcd4, 0 0 10px #00bcd4;
+        transform: translate(-50%, -50%); }
+      @keyframes spin { 0% { transform: translate(-50%,-50%) rotate(0); } 100% { transform: translate(-50%,-50%) rotate(360deg); } }
+    </style>
+
+    <!-- ===== JS utilitário (offsets, active nav, iniciais) ===== -->
+    <script>
+      (function() {
+        const root = document.documentElement;
+        const navbar = document.querySelector('.navbar.fixed-top');
+        const footer = document.querySelector('.app-footer');
+
+        function updateOffsets() {
+          if (navbar) root.style.setProperty('--navbar-h', Math.ceil(navbar.getBoundingClientRect().height) + 'px');
+          if (footer) root.style.setProperty('--footer-h', Math.ceil(footer.getBoundingClientRect().height) + 'px');
+        }
+        window.addEventListener('load', updateOffsets);
+        window.addEventListener('resize', updateOffsets);
+        if (window.ResizeObserver) {
+          const ro = new ResizeObserver(updateOffsets);
+          if (navbar) ro.observe(navbar);
+          if (footer) ro.observe(footer);
+        }
+        document.addEventListener('shown.bs.collapse', updateOffsets);
+        document.addEventListener('hidden.bs.collapse', updateOffsets);
+        updateOffsets();
+      })();
+
+      function showLoadingOverlay(show = true) {
+        const overlay = document.getElementById('loading-overlay');
+        if (overlay) overlay.style.display = show ? 'flex' : 'none';
+      }
+
+      // Marca 'active' no menu
+      (function () {
+        const origin = window.location.origin;
+        const here   = tidy(pathOf(window.location.href));
+        const links = document.querySelectorAll(
+          '.navbar.app-nav a.nav-link[href]:not(.dropdown-toggle), .navbar.app-nav .dropdown-menu a.dropdown-item[href]'
+        );
+        document.querySelectorAll('.navbar.app-nav .active').forEach(el => el.classList.remove('active'));
+
+        links.forEach(link => {
+          const hrefRaw = link.getAttribute('href');
+          if (!hrefRaw) return;
+          const hr = hrefRaw.trim().toLowerCase();
+          if (hr === '#' || hr.startsWith('#') || hr.startsWith('javascript:')) return;
+
+          let url; try { url = new URL(hrefRaw, origin); } catch { return; }
+          if (url.origin !== origin) return;
+          const hrefPath = tidy(url.pathname);
+
+          if (hrefPath === '/') { if (here === '/') markActive(link); return; }
+          if (here === hrefPath || here.startsWith(hrefPath + '/')) {
+            markActive(link);
+            const dd = link.closest('.dropdown');
+            if (dd) { const toggle = dd.querySelector('.nav-link.dropdown-toggle'); if (toggle) toggle.classList.add('active'); }
+          }
+        });
+
+        function pathOf(u) { try { return new URL(u, origin).pathname; } catch { return '/'; } }
+        function tidy(p) { if (!p) return '/'; return p.length > 1 && p.endsWith('/') ? p.slice(0, -1) : p; }
+        function markActive(el) { el.classList.add('active'); }
+      })();
+
+      // Iniciais do usuário
+      function setUserInitials() {
+        const nameEl = document.querySelector('#userMenu .user-chip .d-none.d-sm-inline');
+        const avEl = document.getElementById('userAvatar');
+        if (!nameEl || !avEl) return;
+        const raw = (nameEl.textContent || '').trim(); if (!raw) return;
+        const words = raw.replace(/\s+/g, ' ').split(' ');
+        const first = words[0] || '', last = words.length > 1 ? words.at(-1) : (words[0] || '');
+        const initials = ((first[0] || 'U') + (last[0] || ''))
+          .normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+        avEl.textContent = initials;
+      }
+      document.addEventListener('DOMContentLoaded', setUserInitials);
+      document.addEventListener('htmx:afterSettle', setUserInitials);
+    </script>
+
+    {% include "partials/toasts_all.html" %}
+    {% include "partials/wip_modal.html" %}
+  </body>
+</html>

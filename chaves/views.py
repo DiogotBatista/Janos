@@ -6,11 +6,13 @@ from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render, redirect
+from django.utils.timezone import now
 
 from scripts.importar_chaves import cadastrar_chaves_from_planilha
 from .forms import AtribuirProjetistaForm, ConfirmacaoSolicitacaoForm
 from .forms import ChaveForm, PlanilhaUploadForm
 from .models import Chave, Projetista, Aviso
+from core.messages import message_created_ok, message_updated_ok, message_deleted_ok, message_error
 
 
 def view_index(request):
@@ -99,7 +101,7 @@ def gerenciar_chaves(request):
         'usuario_no_grupo_supervisor': usuario_no_grupo_supervisor,
     }
 
-    return render(request, 'gerenciar_chaves.html', context)
+    return render(request, 'chaves/gerenciar_chaves.html', context)
 
 @login_required(login_url='/janus/login')
 def janus_view(request):
@@ -136,14 +138,15 @@ def editar_chave(request, id):
         form = ChaveForm(request.POST, instance=chave)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Chave atualizada com sucesso!')
-            # return redirect('gerenciar_chaves')
+            # message_updated_ok(request, chave)
+            messages.success(request, "Chave atualizada com sucesso!")
+            return redirect('gerenciar_chaves')
         else:
-            messages.error(request, 'Por favor, corrija os erros abaixo.')
+            message_error(request, 'Por favor, corrija os erros abaixo.')
     else:
         form = ChaveForm(instance=chave)
 
-    return render(request, 'editar_chave.html', {'form': form})
+    return render(request, 'chaves/editar_chave.html', {'form': form})
 
 @login_required(login_url='/janus/login/')
 def view_atribuir_projetista(request):
@@ -185,7 +188,7 @@ def buscar_chave(request):
         except Chave.DoesNotExist:
             chave_pesquisada = None  # Para exibir uma mensagem de erro no template
 
-    return render(request, 'buscar_chave.html', {'chave': chave_pesquisada})
+    return render(request, 'chaves/buscar_chave.html', {'chave': chave_pesquisada})
 
 from .models import EmailConfig
 from django.core.mail import EmailMultiAlternatives
@@ -194,44 +197,56 @@ from django.utils.html import strip_tags
 from datetime import datetime
 
 def solicitacao_chave_view(request):
-    modal_show = False
-    chaves_sem_ns_msg = ''
     form = ConfirmacaoSolicitacaoForm(request.POST or None)
 
     if request.method == 'POST' and form.is_valid():
         try:
             projetista = Projetista.objects.get(email=request.user)
-            usuario_nome = projetista.projetista
-            chaves_sem_ns = Chave.objects.filter(projetista=projetista, ns__isnull=True).count()
-
-            if chaves_sem_ns > 2:
-                modal_show = True
-                chaves_sem_ns_msg = f'Solicitação Negada! Você ainda tem {chaves_sem_ns} Chaves para serem designadas.'
-            else:
-                # Buscar emails dinamicamente do banco de dados
-                destinatarios = EmailConfig.objects.all().values_list('email', flat=True)
-
-                context = {'usuario_nome': usuario_nome, 'data_solicitacao': datetime.now()}
-                html_content = render_to_string('email_solicitacao_chave.html', context)
-                text_content = strip_tags(html_content)
-
-                email = EmailMultiAlternatives(
-                    'Solicitação de Chaves',
-                    text_content,
-                    'noreply@dbsistemas.com.br',
-                    destinatarios  # Usar a lista de emails obtida do banco de dados
-                )
-                email.attach_alternative(html_content, "text/html")
-                # print(f"Enviando e-mail para: {list(destinatarios)}")
-                # print("Destinatários:", list(destinatarios))
-                email.send()
-
-                return redirect('pagina_de_sucesso')
         except Projetista.DoesNotExist:
-            usuario_nome = request.user.get_full_name() or request.user.username
+            # sem projetista associado — trate como quiser (bloquear ou seguir)
+            messages.error(
+                request,
+                "Não foi possível localizar seu cadastro de projetista. Contate o administrador.",
+                extra_tags="no_toast"  # remova se quiser também como toast
+            )
+            return redirect("gerenciar_chaves")
 
-    return render(request, 'solicitacao_chaves.html',
-                  {'form': form, 'modal_show': modal_show, 'chaves_sem_ns_msg': chaves_sem_ns_msg})
+        # 3 ou mais chaves sem NS -> bloqueia e volta pra gestão
+        chaves_sem_ns = Chave.objects.filter(projetista=projetista, ns__isnull=True).count()
+        if chaves_sem_ns >= 3:
+            messages.warning(
+                request,
+                f"Solicitação negada! Você ainda tem {chaves_sem_ns} chaves para serem designadas.",
+                extra_tags="chaves_sem_ns no_toast"
+            )
+            return redirect("gerenciar_chaves")
+
+        # OK: envia a solicitação por e-mail
+        usuario_nome = projetista.projetista
+        destinatarios = EmailConfig.objects.all().values_list('email', flat=True)
+
+        context = {'usuario_nome': usuario_nome, 'data_solicitacao': now()}
+        html_content = render_to_string('email_solicitacao_chave.html', context)
+        text_content = strip_tags(html_content)
+
+        email = EmailMultiAlternatives(
+            'Solicitação de Chaves',
+            text_content,
+            'noreply@dbsistemas.com.br',
+            destinatarios
+        )
+        email.attach_alternative(html_content, "text/html")
+        email.send()
+
+        messages.success(
+            request,
+            "Sua solicitação de chaves foi registrada. Aguarde alguns minutos para o processamento. Em caso de urgência, contate seu supervisor.",
+            extra_tags="solicitacao_ok no_toast"
+        )
+        return redirect("gerenciar_chaves")
+
+    # GET (ou POST inválido): não há mais página própria; volte à gestão
+    return redirect("gerenciar_chaves")
 
 def pagina_de_sucesso_view(request):
     return render(request, 'pagina_de_sucesso.html')

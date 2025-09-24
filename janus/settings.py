@@ -12,6 +12,10 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 from decouple import config, Csv
+from django.contrib.messages import constants as messages
+
+ENV = config('ENV', default='development')  # 'production' em produção
+
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -22,11 +26,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config('DJANGO_SECRET_KEY')
+SECRET_KEY = config('SECRET_KEY')
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG')
 
 ## Recursos Extras de Segurança do Django
 
@@ -54,6 +58,7 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv(), default='localhost,127.0.0.1
 INSTALLED_APPS = [
     'chaves',
     'logs',
+    'core',
     'widget_tweaks',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -66,7 +71,6 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'logs.middleware.erro_logger.LogErroMiddleware', # Tratamento de erros
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -77,6 +81,11 @@ MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
 
 ]
+
+# Ativar captura de erros no log apenas em produção
+if ENV == 'production':
+    MIDDLEWARE.insert(0, 'logs.middleware.erro_logger.LogErroMiddleware')
+
 
 ROOT_URLCONF = 'janus.urls'
 
@@ -146,6 +155,18 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Mapeamento de mensagens do Django -> classes do Bootstrap
+MESSAGE_TAGS = {
+    messages.DEBUG:   'secondary',
+    messages.INFO:    'info',
+    messages.SUCCESS: 'success',
+    messages.WARNING: 'warning',
+    messages.ERROR:   'danger',
+}
+
+
+# Force o backend de mensagens a usar sessão
+MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
@@ -164,15 +185,32 @@ USE_TZ = True
 # Static files (css, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
+# Arquivos estáticos e de mídia
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 
-# Para produção
-# STATIC_ROOT = config('STATIC_ROOT')
-# MEDIA_ROOT = config('MEDIA_ROOT')
+# Em desenvolvimento, os arquivos-fonte ficam em BASE_DIR/static
+# e os arquivos coletados para produção vão para BASE_DIR/staticfiles.
+STATICFILES_DIRS = [BASE_DIR / 'static']  # pasta de fontes estáticas (CSS/JS/imagens do projeto)
+STATIC_ROOT = BASE_DIR / 'staticfiles'    # destino do collectstatic em produção
 
-STATIC_ROOT = BASE_DIR / 'static'
-MEDIA_ROOT = BASE_DIR / 'media'
+# Mídia enviada por usuários
+MEDIA_ROOT = BASE_DIR / 'mediafiles'
+
+# WhiteNoise (servir estáticos em produção com hash/versionamento)
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Se o app estiver atrás de proxy (HTTPS terminado no proxy)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Domínios confiáveis para CSRF (configure via .env)
+# Exemplo de .env: CSRF_TRUSTED_ORIGINS=https://sgccro.dbsistemas.com.br,https://seu-dominio.com.br
+CSRF_TRUSTED_ORIGINS = config(
+    'CSRF_TRUSTED_ORIGINS',
+    cast=Csv(),
+    default=''
+)
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -190,8 +228,10 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = config('EMAIL_HOST')
 EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
-EMAIL_PORT = 587  # ou outra porta conforme sua configuração
-EMAIL_USE_TLS = True
+EMAIL_PORT = config('EMAIL_PORT')
+EMAIL_USE_TLS = config('EMAIL_USE_TLS')
+
+
 
 DATE_FORMAT = 'd/m/y'
 TIME_FORMAT = 'H:i'

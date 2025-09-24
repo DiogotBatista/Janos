@@ -1,0 +1,340 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Gerenciar Chaves - JANOS{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'index' %}">Início</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'janus_view' %}">Menu</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Chaves</li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block extra_head %}
+{{ block.super }}
+<style>
+  .barra-texto {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 0.875rem; pointer-events: none;
+  }
+  .table td, .table th { vertical-align: middle; }
+  /* Evita que os botões estiquem na altura do col */
+  .form-actions { align-items: flex-end; }
+  .form-actions .btn { height: auto; }
+</style>
+{% endblock extra_head %}
+
+{% block content %}
+<div class="container-fluid mt-4 mb-5">
+  <!-- Título e ações -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0 d-flex align-items-center gap-2">
+      <i class="bi bi-bezier2"></i> Chaves
+    </h2>
+    <div class="d-flex gap-2">
+      <a href="{% url 'janus_view' %}" class="btn btn-ghost">
+        <i class="bi bi-arrow-left"></i> Menu
+      </a>
+      <!-- Abrir modal de confirmação -->
+      <button type="button" class="btn btn-soft-success btn-min" data-bs-toggle="modal" data-bs-target="#modalConfirmarSolicitacao">
+        <i class="bi bi-plus-circle"></i> Solicitar Chaves
+      </button>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="card shadow-sm border-0 mb-3">
+    <div class="card-header" style="background:transparent; border-bottom:1px solid var(--divider);">
+      <h5 class="mb-0 d-flex align-items-center gap-2">
+        <i class="bi bi-funnel"></i> Filtros
+      </h5>
+    </div>
+    <div class="card-body"><form method="get" class="mb-0">
+  <div class="row g-3 align-items-end">
+    <div class="col-12 col-md-3">
+      <label for="chave_search" class="form-label">Chave</label>
+      <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-search" aria-hidden="true"></i></span>
+        <input type="text" id="chave_search" name="chave_search" class="form-control"
+               placeholder="Ex: 123456" value="{{ request.GET.chave_search }}">
+      </div>
+    </div>
+
+    <div class="col-12 col-md-3">
+      <label for="ns_search" class="form-label">NS</label>
+      <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-search" aria-hidden="true"></i></span>
+        <input type="text" id="ns_search" name="ns_search" class="form-control"
+               placeholder="Ex: 1234567890" value="{{ request.GET.ns_search }}">
+      </div>
+    </div>
+
+    {% if is_superuser or usuario_no_grupo_supervisor %}
+    <div class="col-12 col-md-3">
+      <label for="projetista_search" class="form-label">Projetista</label>
+      <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-person" aria-hidden="true"></i></span>
+        <input type="text" id="projetista_search" name="projetista_search" class="form-control"
+               placeholder="Ex: João Silva" value="{{ request.GET.projetista_search }}">
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Ações: altura do botão = auto, sem esticar -->
+    <div class="col-12 col-md-auto d-flex gap-2 align-items-end">
+      <button type="submit" class="btn btn-soft-primary btn-min">
+        <i class="bi bi-search"></i> Pesquisar
+      </button>
+
+      {# Escolha 1 (sólido visível): btn-warning #}
+      <a
+        href="?{% if request.GET.chave_search %}chave_search={{ request.GET.chave_search|urlencode }}&{% endif %}{% if request.GET.ns_search %}ns_search={{ request.GET.ns_search|urlencode }}&{% endif %}{% if request.GET.projetista_search %}projetista_search={{ request.GET.projetista_search|urlencode }}&{% endif %}{% if request.GET.page %}page={{ request.GET.page }}&{% endif %}sem_projeto=true"
+        class="btn btn-warning btn-min"
+      >
+        <i class="bi bi-filter"></i> Chaves não designadas
+      </a>
+
+      {# “Limpar” por último #}
+      <a href="{% url 'gerenciar_chaves' %}" class="btn btn-ghost btn-min">
+        <i class="bi bi-eraser"></i> Limpar
+      </a>
+    </div>
+  </div>
+</form>
+
+
+  </div>
+
+ <!-- Tabela -->
+<div class="card shadow-sm border-0">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-striped table-bordered table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th class="text-center">Chave</th>
+            {% if is_superuser or usuario_no_grupo_supervisor %}
+              <th class="text-center">Projetista</th>
+            {% endif %}
+            <th class="text-center">NS</th>
+            <th class="text-center">Poste</th>
+            <th class="text-center">Coordenada</th>
+            <th class="text-center">Polo</th>
+            <th class="text-center">Município</th>
+            <th class="text-center">Observação</th>
+            {% if is_superuser or usuario_no_grupo_supervisor %}
+              <th class="text-center">Inclusão</th>
+            {% endif %}
+            <th class="text-center">Última Modificação</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for chave in chaves %}
+          <tr>
+            <td class="text-center">
+              <a href="{% url 'editar_chave' chave.id %}" class="text-decoration-none text-primary fw-semibold">
+                {{ chave.chave|default_if_none:"" }}
+              </a>
+            </td>
+            {% if is_superuser or usuario_no_grupo_supervisor %}
+              <td class="text-center">{{ chave.projetista|default_if_none:"" }}</td>
+            {% endif %}
+            <td class="text-center">{{ chave.ns|default_if_none:"" }}</td>
+            <td class="text-center">{{ chave.poste|default_if_none:"" }}</td>
+            <td class="text-center">{{ chave.coordenada|default_if_none:"" }}</td>
+            <td class="text-center">{{ chave.polo|default_if_none:"" }}</td>
+            <td class="text-center">{{ chave.municipio|default_if_none:"" }}</td>
+            <td>{{ chave.observacao|default_if_none:"" }}</td>
+            {% if is_superuser or usuario_no_grupo_supervisor %}
+              <td class="text-center">{{ chave.data_inclusao|default_if_none:""|date:"d/m/Y H:i" }}</td>
+            {% endif %}
+            <td class="text-center">{{ chave.data_modificacao|default_if_none:""|date:"d/m/Y H:i" }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="{% if is_superuser or usuario_no_grupo_supervisor %}10{% else %}9{% endif %}" class="text-center">
+              Nenhuma chave encontrada.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+  <!-- Paginação -->
+  <nav aria-label="Navegação de página">
+    <ul class="pagination justify-content-center">
+      {% if chaves.has_previous %}
+        <li class="page-item">
+          <a class="page-link"
+             href="?{% if request.GET.chave_search %}chave_search={{ request.GET.chave_search|urlencode }}&{% endif %}{% if request.GET.ns_search %}ns_search={{ request.GET.ns_search|urlencode }}&{% endif %}{% if request.GET.projetista_search %}projetista_search={{ request.GET.projetista_search|urlencode }}&{% endif %}{% if request.GET.sem_projeto %}sem_projeto={{ request.GET.sem_projeto }}&{% endif %}page={{ chaves.previous_page_number }}"
+             aria-label="Anterior">&laquo;</a>
+        </li>
+      {% endif %}
+
+      {% for page_num in chaves.paginator.page_range %}
+        {% if page_num == chaves.number %}
+          <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
+        {% elif page_num <= 2 or page_num > chaves.paginator.num_pages|add:"-2" or page_num|add:"-1" == chaves.number or page_num|add:"1" == chaves.number %}
+          <li class="page-item">
+            <a class="page-link"
+               href="?{% if request.GET.chave_search %}chave_search={{ request.GET.chave_search|urlencode }}&{% endif %}{% if request.GET.ns_search %}ns_search={{ request.GET.ns_search|urlencode }}&{% endif %}{% if request.GET.projetista_search %}projetista_search={{ request.GET.projetista_search|urlencode }}&{% endif %}{% if request.GET.sem_projeto %}sem_projeto={{ request.GET.sem_projeto }}&{% endif %}page={{ page_num }}">{{ page_num }}</a>
+          </li>
+        {% elif page_num == 3 and chaves.number > 4 %}
+          <li class="page-item disabled"><span class="page-link">...</span></li>
+        {% elif page_num == chaves.paginator.num_pages|add:"-2" and chaves.number < chaves.paginator.num_pages|add:"-3" %}
+          <li class="page-item disabled"><span class="page-link">...</span></li>
+        {% endif %}
+      {% endfor %}
+
+      {% if chaves.has_next %}
+        <li class="page-item">
+          <a class="page-link"
+             href="?{% if request.GET.chave_search %}chave_search={{ request.GET.chave_search|urlencode }}&{% endif %}{% if request.GET.ns_search %}ns_search={{ request.GET.ns_search|urlencode }}&{% endif %}{% if request.GET.projetista_search %}projetista_search={{ request.GET.projetista_search|urlencode }}&{% endif %}{% if request.GET.sem_projeto %}sem_projeto={{ request.GET.sem_projeto }}&{% endif %}page={{ chaves.next_page_number }}"
+             aria-label="Próxima">&raquo;</a>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+</div>
+
+<!-- ===================== MODAIS ===================== -->
+
+<!-- Modal: Confirmar Solicitação -->
+<div class="modal fade" id="modalConfirmarSolicitacao" tabindex="-1" aria-labelledby="modalConfirmarSolicitacaoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header">
+        <h5 class="modal-title d-flex align-items-center gap-2" id="modalConfirmarSolicitacaoLabel">
+          <i class="bi bi-check2-square text-primary"></i> Confirmação de Solicitação
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+
+      <form method="post" action="{% url 'solicitar_chaves' %}">
+        {% csrf_token %}
+        <div class="modal-body">
+          <p class="text-muted mb-3">Deseja solicitar mais número de chaves?</p>
+
+          {% if form and form.confirmacao %}
+            <div class="form-check">
+              {{ form.confirmacao }}
+              {{ form.confirmacao.label_tag }}
+            </div>
+          {% else %}
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" value="on" id="id_confirmacao" name="confirmacao" required>
+              <label class="form-check-label" for="id_confirmacao">
+                Confirmo!
+              </label>
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle"></i> Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-send-check"></i> Confirmar Solicitação
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{# Modal (markup único) #}
+<div class="modal fade" id="modalChavesSemNS" tabindex="-1" aria-labelledby="modalChavesSemNSLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-warning-subtle">
+        <h5 class="modal-title text-dark d-flex align-items-center gap-2" id="modalChavesSemNSLabel">
+          <i class="bi bi-exclamation-triangle-fill text-warning"></i> Aviso Importante
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body" id="modalChavesSemNSBody"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# Abre quando houver tag 'chaves_sem_ns' #}
+{% if messages %}
+  {% for message in messages %}
+    {% if 'chaves_sem_ns' in message.tags %}
+      <script>
+        document.addEventListener('DOMContentLoaded', function(){
+          var el = document.getElementById('modalChavesSemNSBody');
+          if (el && !el.dataset.filled){
+            el.textContent = "{{ message|escapejs }}";
+            el.dataset.filled = "1";
+            new bootstrap.Modal(document.getElementById('modalChavesSemNS')).show();
+          }
+        });
+      </script>
+    {% endif %}
+  {% endfor %}
+{% endif %}
+
+
+{# ===== Modal de sucesso (sempre presente) ===== #}
+<div class="modal fade" id="modalSolicitacaoSucesso" tabindex="-1" aria-labelledby="modalSolicitacaoSucessoLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header">
+        <h5 class="modal-title d-flex align-items-center gap-2" id="modalSolicitacaoSucessoLabel">
+          <span class="success-ring d-inline-flex align-items-center justify-content-center">
+            <i class="bi bi-check2-circle" aria-hidden="true"></i>
+          </span>
+          Solicitação enviada com sucesso!
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body" id="modalSolicitacaoSucessoBody"></div>
+      <div class="modal-footer">
+        <a href="{% url 'janus_view' %}" class="btn btn-ghost">
+          <i class="bi bi-house"></i> Menu
+        </a>
+        <button type="button" class="btn btn-soft-success" data-bs-dismiss="modal">
+          <i class="bi bi-check-lg"></i> Ok
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .success-ring{
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(var(--bs-success-rgb), .12);
+  }
+  .success-ring i{ font-size: 1.2rem; color: var(--bs-success); }
+</style>
+
+{% if messages %}
+  {% for message in messages %}
+    {% if 'solicitacao_ok' in message.tags %}
+      <script>
+        document.addEventListener('DOMContentLoaded', function(){
+          var bodyEl = document.getElementById('modalSolicitacaoSucessoBody');
+          if (bodyEl && !bodyEl.dataset.filled) {
+            bodyEl.textContent = "{{ message|escapejs }}";
+            bodyEl.dataset.filled = "1";
+            new bootstrap.Modal(document.getElementById('modalSolicitacaoSucesso')).show();
+          }
+        });
+      </script>
+    {% endif %}
+  {% endfor %}
+{% endif %}
+{% endblock %}

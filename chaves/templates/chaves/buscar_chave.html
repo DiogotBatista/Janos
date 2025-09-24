@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}Buscar Chave - JANOS{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'index' %}">Início</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'janus_view' %}">Menu</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Buscar Chave</li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block extra_head %}
+{{ block.super }}
+<style>
+  /* Pares rótulo/valor nos detalhes */
+  .meta dt{ color: var(--muted-color); font-weight: 600; }
+  .meta dd{ margin-bottom: .5rem; }
+  /* Não deixar botões do filtro “esticarem” */
+  .form-actions .btn{ height: auto; }
+</style>
+{% endblock extra_head %}
+
+{% block content %}
+<div class="container-fluid mt-4 mb-5">
+
+  <!-- Título -->
+  <div class="d-flex align-items-center gap-2 mb-2">
+    <h2 class="mb-0"><i class="bi bi-search"></i> Buscar Chave</h2>
+  </div>
+  <p class="text-muted mb-3">Digite o número da chave para localizar seus dados.</p>
+
+  <!-- Filtro -->
+  <div class="card shadow-sm border-0 mb-3">
+    <div class="card-header" style="background:transparent; border-bottom:1px solid var(--divider);">
+      <h5 class="mb-0 d-flex align-items-center gap-2">
+        <i class="bi bi-funnel"></i> Filtro
+      </h5>
+    </div>
+    <div class="card-body">
+      <form method="get" class="mb-0" novalidate>
+        <div class="row g-3 align-items-end">
+          <div class="col-12 col-md-6 col-lg-4">
+            <label for="query" class="form-label">Número da Chave</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-search" aria-hidden="true"></i></span>
+              <input
+                type="text" id="query" name="query" class="form-control"
+                placeholder="Ex: 123456" value="{{ request.GET.query|default:'' }}" required
+              >
+            </div>
+          </div>
+
+          <div class="col-12 col-md-auto d-flex form-actions gap-2">
+            <button type="submit" class="btn btn-soft-primary btn-min">
+              <i class="bi bi-search"></i> Buscar
+            </button>
+            <a href="{% url 'buscar_chave' %}" class="btn btn-ghost btn-min">
+              <i class="bi bi-eraser"></i> Limpar
+            </a>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Resultado -->
+  {% if chave %}
+    <div class="card shadow-sm border-0">
+      <div class="card-body">
+        <h5 class="mb-3 d-flex align-items-center gap-2">
+          <i class="bi bi-info-circle"></i> Detalhes da Chave
+        </h5>
+
+        <dl class="row meta mb-0">
+          <dt class="col-sm-4 col-lg-3">Chave</dt>
+          <dd class="col-sm-8 col-lg-9 fw-semibold">{{ chave.chave|default_if_none:'' }}</dd>
+
+          <dt class="col-sm-4 col-lg-3">Técnico responsável</dt>
+          <dd class="col-sm-8 col-lg-9">{{ chave.projetista|default_if_none:'' }}</dd>
+
+          <dt class="col-sm-4 col-lg-3">NS</dt>
+          <dd class="col-sm-8 col-lg-9">{{ chave.ns|default_if_none:'' }}</dd>
+
+          <dt class="col-sm-4 col-lg-3">Polo</dt>
+          <dd class="col-sm-8 col-lg-9">{{ chave.polo|default_if_none:'' }}</dd>
+
+          <dt class="col-sm-4 col-lg-3">Município</dt>
+          <dd class="col-sm-8 col-lg-9">{{ chave.municipio|default_if_none:'' }}</dd>
+
+          <dt class="col-sm-4 col-lg-3">Coordenada</dt>
+          <dd class="col-sm-8 col-lg-9">{{ chave.coordenada|default_if_none:'' }}</dd>
+
+          <dt class="col-sm-4 col-lg-3">Poste</dt>
+          <dd class="col-sm-8 col-lg-9">{{ chave.poste|default_if_none:'' }}</dd>
+
+          <dt class="col-sm-4 col-lg-3">Observação</dt>
+          <dd class="col-sm-8 col-lg-9">{{ chave.observacao|default_if_none:'' }}</dd>
+
+          <dt class="col-sm-4 col-lg-3">Última modificação</dt>
+          <dd class="col-sm-8 col-lg-9">{{ chave.data_modificacao }}</dd>
+        </dl>
+      </div>
+    </div>
+
+  {% elif request.GET.query %}
+    <div class="alert alert-warning shadow-sm mt-3" role="alert">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      <strong>Chave não encontrada.</strong> Verifique o número e tente novamente.
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

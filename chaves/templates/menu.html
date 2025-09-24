@@ -1,145 +1,182 @@
 {% extends 'base.html' %}
 
-{% block title %}Menu Principal - JANOS{% endblock %}
+{% block title %}Página Inicial - JANOS{% endblock %}
+
+{% block extra_head %}
+  {{ block.super }}
+  <style>
+    /* Hover sutil nos cards (mesmo do SGC) */
+    .card-hover{ transition: transform .2s ease, box-shadow .2s ease; }
+    .card-hover:hover{ transform: scale(1.02); box-shadow: 0 .5rem 1rem rgba(0,0,0,.15); }
+  </style>
+{% endblock extra_head %}
 
 {% block content %}
-<div class="container text-center mt-4">
-    <h1 class="fw-bold">Bem-vindo, {{ first_name }}!</h1>
-    <p class="fs-5 text-muted">Selecione uma das opções abaixo para começar:</p>
-</div>
+  <div class="container mt-3 mb-4">
+    <!-- Títulos -->
+    <h2 class="text-center mb-1">JANOS - Sistema de Gerenciamento de Numeração de Equipamentos - CEMIG</h2>
+    <h4 class="text-muted text-center mb-3">CRO - Construtora Ribeiro Oliveira</h4>
 
-<div class="container mt-5">
+    <!-- Saudação (mantém a variável original) -->
+    <p class="text-center text-muted mb-0">
+      <span class="fw-semibold">Bem-vindo, {{ first_name }}!</span>
+      <span class="d-block d-sm-inline">Selecione uma das opções abaixo para começar.</span>
+    </p>
+  </div>
+  <!-- Avisos (mantém a lógica original, visual mais clean) -->
+  {% if avisos %}
+    <div class="container mt-3 mb-4">
+      <div class="alert alert-info shadow-sm py-2">
+        <h5 class="alert-heading mb-2">
+          <i class="bi bi-info-circle-fill me-2"></i> Avisos Importantes
+        </h5>
+        <hr class="my-2">
+        {% for aviso in avisos %}
+          <p class="mb-1">
+            {% if aviso.titulo %}<strong>{{ aviso.titulo }}:</strong> {% endif %}
+            {{ aviso.mensagem }}
+          </p>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+  <!-- Grid de atalhos -->
+  <div class="container mt-4">
     <div class="row g-4 justify-content-center">
 
-        {% if is_superuser or usuario_no_grupo_supervisor %}
-            <!-- Banco de Dados -->
-            <div class="col-md-4">
-                <div class="card h-100 shadow-sm border-0">
-                    <div class="card-body d-flex flex-column text-center gap-3">
-                        <div>
-                            <i class="bi bi-database display-4 text-primary mb-3"></i>
-                            <h5 class="card-title">Banco de Dados</h5>
-                            <p class="card-text">Visualize o painel com informações do sistema JANOS.</p>
-                        </div>
-                        <div class="mt-auto">
-                            <a href="https://janos.dbsistemas.com.br/janos_painel/" class="btn btn-outline-primary">Acessar</a>
-                        </div>
-                    </div>
-                </div>
+      {% if is_superuser or usuario_no_grupo_supervisor %}
+        <!-- Banco de Dados -->
+        <div class="col-sm-6 col-lg-4">
+          <div class="card h-100 shadow-sm border-0 card-hover">
+            <div class="card-body d-flex flex-column text-center gap-3">
+              <div>
+                <i class="bi bi-database icon-xl text-primary mb-3" aria-hidden="true"></i>
+                <h5 class="card-title">Banco de Dados</h5>
+                <p class="card-text text-muted">Visualize o painel com informações do sistema JANOS.</p>
+              </div>
+              <div class="mt-auto">
+                <a href="{% url 'admin:index' %}" class="btn btn-soft-primary btn-sm btn-min" aria-label="Acessar banco de dados">
+                  <i class="bi bi-arrow-right-circle"></i> Acessar
+                </a>
+              </div>
             </div>
+          </div>
+        </div>
 
-            <!-- Gerenciar Chaves -->
-            <div class="col-md-4">
-                <div class="card h-100 shadow-sm border-0">
-                    <div class="card-body d-flex flex-column text-center gap-3">
-                        <div>
-                            <i class="bi-lightning-charge display-4 text-primary mb-3"></i>
-                            <h5 class="card-title">Gerenciar Chaves</h5>
-                            <p class="card-text">Adicione, edite ou exclua registros de chaves.</p>
-                        </div>
-                        <div class="mt-auto">
-                            <a href="{% url 'gerenciar_chaves' %}" class="btn btn-outline-primary">Acessar</a>
-                        </div>
-                    </div>
-                </div>
+        <!-- Gerenciar Chaves -->
+        <div class="col-sm-6 col-lg-4">
+          <div class="card h-100 shadow-sm border-0 card-hover">
+            <div class="card-body d-flex flex-column text-center gap-3">
+              <div>
+                <i class="bi bi-bezier2 icon-xl text-primary mb-3" aria-hidden="true"></i>
+                <h5 class="card-title">Gerenciar Chaves</h5>
+                <p class="card-text text-muted">Atribua ou edite NS's às chaves.</p>
+              </div>
+              <div class="mt-auto">
+                <a href="{% url 'gerenciar_chaves' %}" class="btn btn-soft-primary btn-sm btn-min" aria-label="Acessar gerenciamento de chaves">
+                  <i class="bi bi-arrow-right-circle"></i> Acessar
+                </a>
+              </div>
             </div>
+          </div>
+        </div>
 
-            <!-- Pesquisar Chaves -->
-            <div class="col-md-4">
-                <div class="card h-100 shadow-sm border-0">
-                    <div class="card-body d-flex flex-column text-center gap-3">
-                        <div>
-                            <i class="bi bi-search display-4 text-primary mb-3"></i>
-                            <h5 class="card-title">Pesquisar Chaves</h5>
-                            <p class="card-text">Busque informações completas de uma chave.</p>
-                        </div>
-                        <div class="mt-auto">
-                            <a href="{% url 'buscar_chave' %}" class="btn btn-outline-primary">Acessar</a>
-                        </div>
-                    </div>
-                </div>
+        <!-- Pesquisar Chaves -->
+        <div class="col-sm-6 col-lg-4">
+          <div class="card h-100 shadow-sm border-0 card-hover">
+            <div class="card-body d-flex flex-column text-center gap-3">
+              <div>
+                <i class="bi bi-search icon-xl text-primary mb-3" aria-hidden="true"></i>
+                <h5 class="card-title">Pesquisar Chaves</h5>
+                <p class="card-text text-muted">Busque informações completas de uma chave.</p>
+              </div>
+              <div class="mt-auto">
+                <a href="{% url 'buscar_chave' %}" class="btn btn-soft-primary btn-sm btn-min" aria-label="Acessar pesquisa de chaves">
+                  <i class="bi bi-arrow-right-circle"></i> Acessar
+                </a>
+              </div>
             </div>
+          </div>
+        </div>
 
-            <!-- Extrair Metadados -->
-            <div class="col-md-4">
-                <div class="card h-100 shadow-sm border-0">
-                    <div class="card-body d-flex flex-column text-center gap-3">
-                        <div>
-                            <i class="bi bi-file-earmark-code display-4 text-primary mb-3"></i>
-                            <h5 class="card-title">Extrair Metadados</h5>
-                            <p class="card-text">Extraia informações de fotos para uso técnico.</p>
-                        </div>
-                        <div class="mt-auto">
-                            <a href="https://extrair-metadados.onrender.com/" class="btn btn-outline-primary">Acessar</a>
-                        </div>
-                    </div>
-                </div>
+        <!-- Extrair Metadados -->
+        <div class="col-sm-6 col-lg-4">
+          <div class="card h-100 shadow-sm border-0 card-hover">
+            <div class="card-body d-flex flex-column text-center gap-3">
+              <div>
+                <i class="bi bi-file-earmark-code icon-xl text-info mb-3" aria-hidden="true"></i>
+                <h5 class="card-title">Extrair Metadados</h5>
+                <p class="card-text text-muted">Extraia informações de fotos para uso técnico.</p>
+              </div>
+              <div class="mt-auto">
+                <a href="https://extrair-metadados.onrender.com/" class="btn btn-soft-primary btn-sm btn-min" aria-label="Acessar extrator de metadados">
+                  <i class="bi bi-arrow-right-circle"></i> Acessar
+                </a>
+              </div>
             </div>
+          </div>
+        </div>
 
-        {% elif usuario_no_grupo_topografia %}
-            <!-- Extrair Metadados -->
-            <div class="col-md-4">
-                <div class="card h-100 shadow-sm border-0">
-                    <div class="card-body d-flex flex-column text-center gap-3">
-                        <div>
-                            <i class="bi bi-file-earmark-code display-4 text-primary mb-3"></i>
-                            <h5 class="card-title">Extrair Metadados</h5>
-                            <p class="card-text">Extraia informações de arquivos para uso técnico.</p>
-                        </div>
-                        <div class="mt-auto">
-                            <a href="https://extrair-metadados.onrender.com/" class="btn btn-outline-primary">Acessar</a>
-                        </div>
-                    </div>
-                </div>
+      {% elif usuario_no_grupo_topografia %}
+        <!-- Extrair Metadados (Topografia) -->
+        <div class="col-sm-6 col-lg-4">
+          <div class="card h-100 shadow-sm border-0 card-hover">
+            <div class="card-body d-flex flex-column text-center gap-3">
+              <div>
+                <i class="bi bi-file-earmark-code icon-xl text-info mb-3" aria-hidden="true"></i>
+                <h5 class="card-title">Extrair Metadados</h5>
+                <p class="card-text text-muted">Extraia informações de arquivos para uso técnico.</p>
+              </div>
+              <div class="mt-auto">
+                <a href="https://extrair-metadados.onrender.com/" class="btn btn-soft-primary btn-sm btn-min" aria-label="Acessar extrator de metadados">
+                  <i class="bi bi-arrow-right-circle"></i> Acessar
+                </a>
+              </div>
             </div>
+          </div>
+        </div>
 
-        {% elif usuario_no_grupo_tecnicos %}
-            <!-- Gerenciar Chaves -->
-            <div class="col-md-4">
-                <div class="card h-100 shadow-sm border-0">
-                    <div class="card-body d-flex flex-column text-center gap-3">
-                        <div>
-                            <i class="bi-lightning-charge display-4 text-primary mb-3"></i>
-                            <h5 class="card-title">Gerenciar Chaves</h5>
-                            <p class="card-text">Adicione, edite ou exclua registros de chaves.</p>
-                        </div>
-                        <div class="mt-auto">
-                            <a href="{% url 'gerenciar_chaves' %}" class="btn btn-outline-primary">Acessar</a>
-                        </div>
-                    </div>
-                </div>
+      {% elif usuario_no_grupo_tecnicos %}
+        <!-- Gerenciar Chaves (Técnicos) -->
+        <div class="col-sm-6 col-lg-4">
+          <div class="card h-100 shadow-sm border-0 card-hover">
+            <div class="card-body d-flex flex-column text-center gap-3">
+              <div>
+                <i class="bi bi-lightning-charge icon-xl text-primary mb-3" aria-hidden="true"></i>
+                <h5 class="card-title">Gerenciar Chaves</h5>
+                <p class="card-text text-muted">Adicione, edite ou exclua registros de chaves.</p>
+              </div>
+              <div class="mt-auto">
+                <a href="{% url 'gerenciar_chaves' %}" class="btn btn-soft-primary btn-sm btn-min" aria-label="Acessar gerenciamento de chaves">
+                  <i class="bi bi-arrow-right-circle"></i> Acessar
+                </a>
+              </div>
             </div>
+          </div>
+        </div>
 
-            <!-- Pesquisar Chaves -->
-            <div class="col-md-4">
-                <div class="card h-100 shadow-sm border-0">
-                    <div class="card-body d-flex flex-column text-center gap-3">
-                        <div>
-                            <i class="bi bi-search display-4 text-primary mb-3"></i>
-                            <h5 class="card-title">Pesquisar Chaves</h5>
-                            <p class="card-text">Busque por número de chave, projeto, data e mais.</p>
-                        </div>
-                        <div class="mt-auto">
-                            <a href="{% url 'buscar_chave' %}" class="btn btn-outline-primary">Acessar</a>
-                        </div>
-                    </div>
-                </div>
+        <!-- Pesquisar Chaves (Técnicos) -->
+        <div class="col-sm-6 col-lg-4">
+          <div class="card h-100 shadow-sm border-0 card-hover">
+            <div class="card-body d-flex flex-column text-center gap-3">
+              <div>
+                <i class="bi bi-search icon-xl text-primary mb-3" aria-hidden="true"></i>
+                <h5 class="card-title">Pesquisar Chaves</h5>
+                <p class="card-text text-muted">Busque por número de chave, projeto, data e mais.</p>
+              </div>
+              <div class="mt-auto">
+                <a href="{% url 'buscar_chave' %}" class="btn btn-soft-primary btn-sm btn-min" aria-label="Acessar pesquisa de chaves">
+                  <i class="bi bi-arrow-right-circle"></i> Acessar
+                </a>
+              </div>
             </div>
-        {% endif %}
+          </div>
+        </div>
+      {% endif %}
 
     </div>
-</div>
+    <!-- /row -->
+  </div>
 
-<!-- Avisos -->
-{% if avisos %}
-<div class="container mt-5">
-    <div class="alert alert-info shadow-sm">
-        <h5 class="alert-heading"><i class="bi bi-info-circle-fill me-2"></i> Avisos Importantes</h5>
-        <hr>
-        {% for aviso in avisos %}
-            <p class="mb-1"><strong>{{ aviso.titulo }}:</strong> {{ aviso.mensagem }}</p>
-        {% endfor %}
-    </div>
-</div>
-{% endif %}
+
 {% endblock %}

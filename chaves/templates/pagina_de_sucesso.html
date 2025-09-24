@@ -2,25 +2,57 @@
 
 {% block title %}Solicitação de Chaves - JANOS{% endblock %}
 
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'index' %}">Início</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'janus_view' %}">Menu</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Solicitação</li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block extra_head %}
+{{ block.super }}
+<style>
+  .success-ring{
+    width: 72px; height: 72px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: rgba(var(--bs-success-rgb), .12);
+  }
+  .success-ring i{ font-size: 2rem; color: var(--bs-success); }
+</style>
+{% endblock extra_head %}
+
 {% block content %}
+<div class="container-fluid mt-4 mb-5">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-10 col-lg-8 col-xl-6">
+      <div class="card shadow-sm border-0">
+        <div class="card-body p-5 text-center" role="status" aria-live="polite">
+          <div class="mb-3">
+            <span class="success-ring">
+              <i class="bi bi-check2-circle" aria-hidden="true"></i>
+            </span>
+          </div>
 
+          <h3 class="fw-bold mb-2">Solicitação enviada com sucesso!</h3>
+          <p class="fs-5 text-muted mb-0">
+            Sua solicitação de chaves foi registrada. Aguarde alguns minutos para que ela seja processada.
+            Caso tenha urgência, entre em contato com o seu supervisor.
+          </p>
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
-            <div class="alert alert-success text-center shadow-sm p-5 border-0">
-                <i class="bi bi-check-circle-fill display-3 text-success mb-3"></i>
-                <h4 class="fw-bold">Solicitação enviada com sucesso!</h4>
-                <p class="fs-5 mt-3 text-muted">
-                    Sua solicitação de chaves foi registrada. Aguarde alguns minutos para que ela seja processada. Caso tenha urgência, entre em contato com o seu supervisor.
-                </p>
-                <div class="mt-4">
-                    <a href="{% url 'gerenciar_chaves' %}" class="btn btn-success">
-                        <i class="bi bi-house-door-fill me-1"></i> Voltar ao Menu
-                    </a>
-                </div>
-            </div>
+          <div class="mt-4 d-flex justify-content-center gap-2">
+            <a href="{% url 'gerenciar_chaves' %}" class="btn btn-soft-success btn-min">
+              <i class="bi bi-arrow-left-circle"></i> Voltar às Chaves
+            </a>
+            <a href="{% url 'janus_view' %}" class="btn btn-ghost">
+              <i class="bi bi-house"></i> Menu
+            </a>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
 </div>
 {% endblock %}
