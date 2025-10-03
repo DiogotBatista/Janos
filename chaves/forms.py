@@ -25,7 +25,6 @@ class ChaveForm(forms.ModelForm):
             self.fields['chave'].widget.attrs['readonly'] = True
             self.fields['chave'].disabled = True  # Opcional, caso queira que o valor seja enviado no formulário
 
-
 class CustomUsuarioCreateForm(UserCreationForm):
 
     class Meta:
@@ -41,7 +40,6 @@ class CustomUsuarioCreateForm(UserCreationForm):
         if commit:
             user.save()
         return user
-
 
 class CustomUsuarioChangeForm(UserChangeForm):
     class Meta:

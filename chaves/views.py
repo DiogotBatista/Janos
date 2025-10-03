@@ -7,6 +7,7 @@ from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render, redirect
 from django.utils.timezone import now
+from django.conf import settings
 
 from scripts.importar_chaves import cadastrar_chaves_from_planilha
 from .forms import AtribuirProjetistaForm, ConfirmacaoSolicitacaoForm
@@ -224,6 +225,7 @@ def solicitacao_chave_view(request):
         # OK: envia a solicitação por e-mail
         usuario_nome = projetista.projetista
         destinatarios = EmailConfig.objects.all().values_list('email', flat=True)
+        from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'JANOS <noreply@dbsistemas.com.br>')
 
         context = {'usuario_nome': usuario_nome, 'data_solicitacao': now()}
         html_content = render_to_string('email_solicitacao_chave.html', context)
@@ -232,7 +234,7 @@ def solicitacao_chave_view(request):
         email = EmailMultiAlternatives(
             'Solicitação de Chaves',
             text_content,
-            'noreply@dbsistemas.com.br',
+            from_email,
             destinatarios
         )
         email.attach_alternative(html_content, "text/html")

@@ -134,6 +134,7 @@
 
   <body class="d-flex flex-column min-vh-100 has-fixed-footer">
     <!-- Header / Navbar -->
+    {% if user.is_authenticated %}
     <nav class="navbar navbar-expand-lg app-nav fixed-top">
       <div class="container-fluid">
         <a class="navbar-brand" href="{% url 'index' %}">
@@ -190,7 +191,7 @@
         </div>
       </div>
     </nav>
-
+    {% endif %}
     <!-- Conteúdo -->
     <main role="main" class="flex-grow-1 container page-content">
       {% block breadcrumbs %}{% endblock %}

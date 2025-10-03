@@ -30,17 +30,16 @@ SECRET_KEY = config('SECRET_KEY')
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG')
+DEBUG = config('DEBUG', cast=bool, default=False)
 
 ## Recursos Extras de Segurança do Django
 
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
-SECURE_HSTS_SECONDS = True
+SECURE_HSTS_SECONDS = 31536000
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
-SECURE_BROWSER_XSS_FILTER = True
 CSRF_COOKIE_HTTPONLY = True
 X_FRAME_OPTIONS = 'DENY'
 
@@ -78,7 +77,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
 
 ]
 
@@ -175,8 +173,6 @@ LANGUAGE_CODE = 'pt-br'
 
 TIME_ZONE = 'America/Sao_Paulo'
 
-USE_L10N = False
-
 USE_I18N = True
 
 USE_TZ = True
@@ -196,9 +192,6 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'    # destino do collectstatic em produç�
 
 # Mídia enviada por usuários
 MEDIA_ROOT = BASE_DIR / 'mediafiles'
-
-# WhiteNoise (servir estáticos em produção com hash/versionamento)
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Se o app estiver atrás de proxy (HTTPS terminado no proxy)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -227,9 +220,10 @@ LOGOUT_REDIRECT_URL = '/janus/login/'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = config('EMAIL_HOST')
 EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
-EMAIL_PORT = config('EMAIL_PORT')
-EMAIL_USE_TLS = config('EMAIL_USE_TLS')
+EMAIL_PORT = config('EMAIL_PORT', cast=int, default=587)
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool, default=True)
 
 
 
